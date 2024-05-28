@@ -151,7 +151,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Downloader.cpp" />
+    <ClCompile Include="FileUtils.cpp" />
     <ClCompile Include="StateMC Installer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Downloader.h" />
+    <ClInclude Include="FileUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
