@@ -9,7 +9,8 @@ struct DownloadItem {
     const char* fileName;
 };
 
-bool downloadURL(const char* url, const char* fileName);
-int progress_bar(void* bar, double t, double d);
+bool downloadURL(const char* url, const char* fileName, int console_line);
+void moveCursorToLine(int line);
+int progress_bar(void* bar, double t, double d, double ultotal, double ulnow);
 
 #endif /* DOWNLOADER_H */

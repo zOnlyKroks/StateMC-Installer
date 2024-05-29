@@ -24,62 +24,65 @@ const std::vector<std::pair<const char*, const char*>> downloadUrls = {
 const char* output_file_plugin = "C:\\StateInstallerTemp\\StateMC_Voice_Plugin-2.1.0-win64.ts3_plugin";
 const char* temp_directory = "C:\\StateInstallerTemp";
 
-void excuteTeamspeakPluginInstall() {
+void executeTeamspeakPluginInstall() {
+    std::cout << "Installing Teamspeak plugin..." << std::endl;
     char* programFiles = nullptr;
     size_t len = 0;
 
-    if (_dupenv_s(&programFiles, &len, "ProgramFiles") != 0 || programFiles == nullptr) {
+    if (_dupenv_s(&programFiles, &len, "ProgramFiles") != 0 || !programFiles) {
         std::cerr << "Failed to get Program Files directory." << std::endl;
         return;
     }
 
-    std::string teamspeakPath = std::string(programFiles) + "\\TeamSpeak 3 Client\\package_inst.exe";
+    std::unique_ptr<char, decltype(&free)> programFilesPtr(programFiles, free);
 
-    // Check if the file exists
+    std::string teamspeakPath = std::string(programFilesPtr.get()) + "\\TeamSpeak 3 Client\\package_inst.exe";
     if (GetFileAttributesA(teamspeakPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
         std::cerr << "File not found: " << teamspeakPath << std::endl;
         return;
     }
 
-    // Create the command line argument string
     std::string commandLine = "\"" + teamspeakPath + "\" \"" + output_file_plugin + "\"";
-
-    // Execute the file
-    STARTUPINFOA si;
+    STARTUPINFOA si = { sizeof(si) };
     PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
 
-    if (!CreateProcessA(
-        NULL,                          // No module name (use command line)
-        const_cast<char*>(commandLine.c_str()), // Command line
-        NULL,                          // Process handle not inheritable
-        NULL,                          // Thread handle not inheritable
-        FALSE,                         // Set handle inheritance to FALSE
-        0,                             // No creation flags
-        NULL,                          // Use parent's environment block
-        NULL,                          // Use parent's starting directory 
-        &si,                           // Pointer to STARTUPINFO structure
-        &pi)                           // Pointer to PROCESS_INFORMATION structure
-        ) {
+    if (!CreateProcessA(nullptr, commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
         std::cerr << "CreateProcess failed (" << GetLastError() << ")." << std::endl;
         return;
     }
 
-    // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
-
-    // Close process and thread handles.
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
-
-    std::cout << "package_inst.exe executed successfully." << std::endl;
+    std::cout << "Teamspeak plugin installed." << std::endl;
 }
 
 void installJava() {
+    std::cout << "Installing Java..." << std::endl;
     const char* command = "msiexec /i \"C:\\StateInstallerTemp\\jre_installer.msi\" ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome,FeatureOracleJavaSoft, INSTALLDIR=\"C:\\Program Files\\Java\\\"";
     system(command);
+    std::cout << "Java installed." << std::endl;
+}
+
+bool downloadFilesConcurrently() {
+    std::vector<std::thread> downloadThreads;
+
+    int console_line = 3;  // Starting line for download progress
+
+    for (const auto& [url, fileName] : downloadUrls) {
+        downloadThreads.emplace_back([url, fileName, console_line]() {
+            if (!downloadURL(url, fileName, console_line)) {
+                std::cerr << "Failed to download: " << fileName << std::endl;
+            }
+            });
+        console_line += 4;  // Adjust line for next download progress
+    }
+
+    for (auto& thread : downloadThreads) {
+        thread.join();
+    }
+
+    return true;
 }
 
 int main() {
@@ -87,28 +90,36 @@ int main() {
 
     createDownloadDirectory("C:\\StateInstallerTemp\\");
 
-    for (const auto& [url, fileName] : downloadUrls) {
-        if (!downloadURL(url, fileName)) {
-            std::cerr << "Failed to download: " << fileName << std::endl;
-        }
+    if (!downloadFilesConcurrently()) {
+        std::cerr << "Failed to download files." << std::endl;
+        return 1;
     }
+
+    moveCursorToLine(18);
 
     //Java
     installJava();
 
     //Teamspeak
+    std::cout << "Installing Teamspeak..." << std::endl;
     system("C:\\StateInstallerTemp\\TeamSpeak_Client_v3.6.0.exe");
+    std::cout << "Teamspeak installed." << std::endl;
 
     //Plugin
-    excuteTeamspeakPluginInstall();
+    executeTeamspeakPluginInstall();
 
     //Technic
+    std::cout << "Installing Technic Launcher..." << std::endl;
     system("C:\\StateInstallerTemp\\TechnicLauncher.exe");
+    std::cout << "Technic Launcher installed." << std::endl;
 
     //Clean temp dir
+    std::cout << "Cleaning up..." << std::endl;
     deleteTempDirectory(temp_directory);
+    std::cout << "Cleaned up." << std::endl;
 
     std::cout << "If you see this, installation is finished and you can close this window." << std::endl;
+    std::cout << "Made with love by zOnlyKroks :3" << std::endl;
 
     return 0;
 }
