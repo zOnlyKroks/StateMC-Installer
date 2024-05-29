@@ -9,6 +9,7 @@
 #include <tchar.h>
 #include <filesystem>
 #include <optional>
+#include <shlobj.h>
 #include "Downloader.h"
 #include "FileUtils.h"
 
@@ -85,6 +86,27 @@ bool downloadFilesConcurrently() {
     return true;
 }
 
+void moveAndExecuteTechnicLauncher() {
+    //Get desktop path, copy from temp to desktop
+    char* desktopPath = nullptr;
+    size_t len = 0;
+
+    if (_dupenv_s(&desktopPath, &len, "USERPROFILE") != 0 || !desktopPath) {
+		std::cerr << "Failed to get desktop directory." << std::endl;
+		return;
+	}
+
+    std::unique_ptr<char, decltype(&free)> desktopPathPtr(desktopPath, free);
+
+	std::string desktopPathString = std::string(desktopPathPtr.get()) + "\\Desktop\\TechnicLauncher.exe";
+	fs::copy("C:\\StateInstallerTemp\\TechnicLauncher.exe", desktopPathString);
+
+	//Execute Technic Launcher
+	std::cout << "Executing Technic Launcher..." << std::endl;
+	system(desktopPathString.c_str());
+	std::cout << "Technic Launcher executed." << std::endl;
+}
+
 int main() {
     std::cout << "StateMC Installer" << std::endl;
 
@@ -108,10 +130,8 @@ int main() {
     //Plugin
     executeTeamspeakPluginInstall();
 
-    //Technic
-    std::cout << "Installing Technic Launcher..." << std::endl;
-    system("C:\\StateInstallerTemp\\TechnicLauncher.exe");
-    std::cout << "Technic Launcher installed." << std::endl;
+    //Move and execute Technic Launcher
+    moveAndExecuteTechnicLauncher();
 
     //Clean temp dir
     std::cout << "Cleaning up..." << std::endl;
