@@ -12,13 +12,6 @@
 
 namespace fs = std::filesystem;
 
-const std::vector<std::pair<const char*, const char*>> downloadUrls = {
-    {"https://api.adoptium.net/v3/installer/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse?project=jdk", "C:\\StateInstallerTemp\\jre_installer.msi"},
-    {"https://launcher.technicpack.net/launcher4/831/TechnicLauncher.exe", "C:\\StateInstallerTemp\\TechnicLauncher.exe"},
-    {"https://download.filepuma.com/files/chat-and-instant-messaging/teamspeak-client-64bit-/TeamSpeak_Client_(64bit)_v3.6.0.exe", "C:\\StateInstallerTemp\\TeamSpeak_Client_v3.6.0.exe"},
-    {"https://www.statemc.de/download/ts/StateMC_Voice_Plugin-2.1.0-win64.ts3_plugin", "C:\\StateInstallerTemp\\StateMC_Voice_Plugin-2.1.0-win64.ts3_plugin"}
-};
-
 const char* output_file_plugin = "C:\\StateInstallerTemp\\StateMC_Voice_Plugin-2.1.0-win64.ts3_plugin";
 const char* temp_directory = "C:\\StateInstallerTemp";
 
@@ -61,7 +54,7 @@ void installJava() {
     }
 }
 
-bool downloadFilesConcurrently() {
+bool downloadFilesConcurrently(std::vector<std::pair<const char*, const char*>> downloadUrls) {
     std::vector<std::thread> downloadThreads;
 
     int console_line = 3;  // Starting line for download progress
@@ -126,11 +119,6 @@ void moveAndExecuteTechnicLauncher() {
 
 void handleCreateDirectory() {
     createDownloadDirectory("C:\\StateInstallerTemp\\");
-
-    if (!downloadFilesConcurrently()) {
-        std::cerr << "Failed to download files." << std::endl;
-        return;
-    }
 }
 
 void finishUp() {
@@ -142,24 +130,82 @@ void finishUp() {
     std::cout << "Made with love by zOnlyKroks :3" << std::endl;
 }
 
+boolean doInstallJava = false;
+boolean doExecuteTeamspeak = false;
+boolean doExecuteTeamspeakPlugin = false;
+boolean doExecuteTechnicLauncher = false;
+
 int main() {
+    std::cout << "StateMC Installer" << std::endl;
+
+    std::vector<std::pair<const char*, const char*>> downloadUrls = {};
+
+    char choice;
+
+    std::cout << "Do you want to install Java? (y/n): ";
+    std::cin >> choice;
+
+    if (choice == 'y') {
+        downloadUrls.push_back({ "https://api.adoptium.net/v3/installer/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse?project=jdk", "C:\\StateInstallerTemp\\jre_installer.msi" });
+        doInstallJava = true;
+	}
+
+    std::cout << "Do you want to install Teamspeak? (y/n): ";
+    std::cin >> choice;
+
+    if (choice == 'y') {
+        downloadUrls.push_back({ "https://download.filepuma.com/files/chat-and-instant-messaging/teamspeak-client-64bit-/TeamSpeak_Client_(64bit)_v3.6.0.exe", "C:\\StateInstallerTemp\\TeamSpeak_Client_v3.6.0.exe" });
+        doExecuteTeamspeak = true;
+    }
+
+    std::cout << "Do install Teamspeak Plugin? (y/n): ";
+    std::cin >> choice;
+
+    if (choice == 'y') {
+        downloadUrls.push_back({ "https://www.statemc.de/download/ts/StateMC_Voice_Plugin-2.1.0-win64.ts3_plugin", "C:\\StateInstallerTemp\\StateMC_Voice_Plugin-2.1.0-win64.ts3_plugin" });
+        doExecuteTeamspeakPlugin = true;
+	}
+
+    std::cout << "Do you want to execute Technic Launcher? (y/n): ";
+    std::cin >> choice;
+
+    if (choice == 'y') {
+        downloadUrls.push_back({ "https://launcher.technicpack.net/launcher4/831/TechnicLauncher.exe", "C:\\StateInstallerTemp\\TechnicLauncher.exe" });
+		doExecuteTechnicLauncher = true;
+	}
+
+    system("cls");
+
     std::cout << "StateMC Installer" << std::endl;
 
     handleCreateDirectory();
 
     moveCursorToLine(18);
 
+    if (!downloadFilesConcurrently(downloadUrls)) {
+        std::cerr << "Failed to download files." << std::endl;
+        return -1;
+    }
+
     // Java
-    installJava();
+    if (doInstallJava) {
+        installJava();
+    }
 
     // Teamspeak
-    executeTeamspeakInstaller();
+    if (doExecuteTeamspeak) {
+        executeTeamspeakInstaller();
+    }
 
     // Plugin
-    executeTeamspeakPluginInstall();
+    if (doExecuteTeamspeakPlugin) {
+        executeTeamspeakPluginInstall();
+    }
 
     // Move and execute Technic Launcher
-    moveAndExecuteTechnicLauncher();
+    if (doExecuteTechnicLauncher) {
+        moveAndExecuteTechnicLauncher();
+    }
 
     // Clean temp dir
     finishUp();
