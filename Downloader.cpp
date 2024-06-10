@@ -17,12 +17,11 @@ std::mutex console_mutex;
 struct ProgressData {
     int last_progress = -1;
     std::string file_name;
-    int console_line;
+    int console_line = 0;
 };
 
 size_t write_data(void* ptr, size_t size, size_t nmemb, FILE* stream) {
-    size_t written = fwrite(ptr, size, nmemb, stream);
-    return written;
+    return fwrite(ptr, size, nmemb, stream);
 }
 
 void moveCursorToLine(int line) {
@@ -36,10 +35,10 @@ int progress_bar(void* ptr, double total_to_download, double now_downloaded, dou
     if (total_to_download == 0) return 0;  // Avoid division by zero
 
     ProgressData* progress_data = static_cast<ProgressData*>(ptr);
-    double progress = round((now_downloaded / total_to_download) * 100);
+    int progress = static_cast<int>(round((now_downloaded / total_to_download) * 100));
     if (progress_data->last_progress != progress) {
         progress_data->last_progress = progress;
-        int progress_bar_adv = round((now_downloaded / total_to_download) * nb_bar);
+        int progress_bar_adv = static_cast<int>(round((now_downloaded / total_to_download) * nb_bar));
 
         std::lock_guard<std::mutex> lock(console_mutex);
         moveCursorToLine(progress_data->console_line);
@@ -71,18 +70,14 @@ int progress_bar(void* ptr, double total_to_download, double now_downloaded, dou
 }
 
 bool downloadURL(const char* url, const char* fileName, int console_line) {
-    CURL* curl_download;
-    CURLcode res;
-    FILE* fp;
-
-    curl_download = curl_easy_init();
+    CURL* curl_download = curl_easy_init();
     if (!curl_download) {
         std::cerr << "Failed to initialize CURL." << std::endl;
         return false;
     }
 
-    fopen_s(&fp, fileName, "wb");
-    if (!fp) {
+    FILE* fp = nullptr;
+    if (fopen_s(&fp, fileName, "wb") != 0 || !fp) {
         std::cerr << "Failed to open file: " << fileName << std::endl;
         curl_easy_cleanup(curl_download);
         return false;
@@ -107,7 +102,7 @@ bool downloadURL(const char* url, const char* fileName, int console_line) {
         std::cout << "Start download of " << fileName << std::endl;
     }
 
-    res = curl_easy_perform(curl_download);
+    CURLcode res = curl_easy_perform(curl_download);
     fclose(fp);
 
     {

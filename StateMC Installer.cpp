@@ -1,17 +1,14 @@
 #include <iostream>
-#include <fstream>
-#include <curl/curl.h>
-#include <math.h>
-#include <cstdlib> // for system function
-#include <chrono>
+#include <cmath>
 #include <thread>
 #include <windows.h>
 #include <tchar.h>
 #include <filesystem>
 #include <optional>
-#include <shlobj.h>
+#include <vector>
 #include "Downloader.h"
 #include "FileUtils.h"
+#include "ProcessHelper.h"
 
 namespace fs = std::filesystem;
 
@@ -44,25 +41,24 @@ void executeTeamspeakPluginInstall() {
     }
 
     std::string commandLine = "\"" + teamspeakPath + "\" \"" + output_file_plugin + "\"";
-    STARTUPINFOA si = { sizeof(si) };
-    PROCESS_INFORMATION pi;
 
-    if (!CreateProcessA(nullptr, commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-        std::cerr << "CreateProcess failed (" << GetLastError() << ")." << std::endl;
-        return;
+    if (!runProcess(commandLine)) {
+        std::cerr << "Failed to install Teamspeak plugin." << std::endl;
     }
-
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    std::cout << "Teamspeak plugin installed." << std::endl;
+    else {
+        std::cout << "Teamspeak plugin installed." << std::endl;
+    }
 }
 
 void installJava() {
     std::cout << "Installing Java..." << std::endl;
-    const char* command = "msiexec /i \"C:\\StateInstallerTemp\\jre_installer.msi\" ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome,FeatureOracleJavaSoft, INSTALLDIR=\"C:\\Program Files\\Java\\\"";
-    system(command);
-    std::cout << "Java installed." << std::endl;
+    const char* command = "msiexec /i \"C:\\StateInstallerTemp\\jre_installer.msi\" ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome,FeatureOracleJavaSoft INSTALLDIR=\"C:\\Program Files\\Java\\\"";
+    if (!runProcess(command)) {
+        std::cerr << "Failed to install Java." << std::endl;
+    }
+    else {
+        std::cout << "Java installed." << std::endl;
+    }
 }
 
 bool downloadFilesConcurrently() {
@@ -86,60 +82,87 @@ bool downloadFilesConcurrently() {
     return true;
 }
 
+void executeTeamspeakInstaller() {
+    std::cout << "Installing Teamspeak..." << std::endl;
+    const char* command = "C:\\StateInstallerTemp\\TeamSpeak_Client_v3.6.0.exe";
+    if (!runProcess(command)) {
+        std::cerr << "Failed to install Teamspeak." << std::endl;
+    }
+    else {
+        std::cout << "Teamspeak installed." << std::endl;
+    }
+}
+
 void moveAndExecuteTechnicLauncher() {
-    //Get desktop path, copy from temp to desktop
+    // Get desktop path, copy from temp to desktop
     char* desktopPath = nullptr;
     size_t len = 0;
 
     if (_dupenv_s(&desktopPath, &len, "USERPROFILE") != 0 || !desktopPath) {
-		std::cerr << "Failed to get desktop directory." << std::endl;
-		return;
-	}
+        std::cerr << "Failed to get desktop directory." << std::endl;
+        return;
+    }
 
     std::unique_ptr<char, decltype(&free)> desktopPathPtr(desktopPath, free);
 
-	std::string desktopPathString = std::string(desktopPathPtr.get()) + "\\Desktop\\TechnicLauncher.exe";
-	fs::copy("C:\\StateInstallerTemp\\TechnicLauncher.exe", desktopPathString);
+    std::string desktopPathString = std::string(desktopPathPtr.get()) + "\\Desktop\\TechnicLauncher.exe";
+    try {
+        fs::copy("C:\\StateInstallerTemp\\TechnicLauncher.exe", desktopPathString, fs::copy_options::overwrite_existing);
+    }
+    catch (const fs::filesystem_error& e) {
+        std::cerr << "Failed to copy TechnicLauncher.exe to desktop: " << e.what() << std::endl;
+        return;
+    }
 
-	//Execute Technic Launcher
-	std::cout << "Executing Technic Launcher..." << std::endl;
-	system(desktopPathString.c_str());
-	std::cout << "Technic Launcher executed." << std::endl;
+    // Execute Technic Launcher
+    std::cout << "Executing Technic Launcher..." << std::endl;
+    if (!runProcess(desktopPathString)) {
+        std::cerr << "Failed to execute Technic Launcher." << std::endl;
+    }
+    else {
+        std::cout << "Technic Launcher executed." << std::endl;
+    }
 }
 
-int main() {
-    std::cout << "StateMC Installer" << std::endl;
-
+void handleCreateDirectory() {
     createDownloadDirectory("C:\\StateInstallerTemp\\");
 
     if (!downloadFilesConcurrently()) {
         std::cerr << "Failed to download files." << std::endl;
-        return 1;
+        return;
     }
+}
 
-    moveCursorToLine(18);
-
-    //Java
-    installJava();
-
-    //Teamspeak
-    std::cout << "Installing Teamspeak..." << std::endl;
-    system("C:\\StateInstallerTemp\\TeamSpeak_Client_v3.6.0.exe");
-    std::cout << "Teamspeak installed." << std::endl;
-
-    //Plugin
-    executeTeamspeakPluginInstall();
-
-    //Move and execute Technic Launcher
-    moveAndExecuteTechnicLauncher();
-
-    //Clean temp dir
+void finishUp() {
     std::cout << "Cleaning up..." << std::endl;
     deleteTempDirectory(temp_directory);
     std::cout << "Cleaned up." << std::endl;
 
     std::cout << "If you see this, installation is finished and you can close this window." << std::endl;
     std::cout << "Made with love by zOnlyKroks :3" << std::endl;
+}
+
+int main() {
+    std::cout << "StateMC Installer" << std::endl;
+
+    handleCreateDirectory();
+
+    moveCursorToLine(18);
+
+    // Java
+    installJava();
+
+    // Teamspeak
+    executeTeamspeakInstaller();
+
+    // Plugin
+    executeTeamspeakPluginInstall();
+
+    // Move and execute Technic Launcher
+    moveAndExecuteTechnicLauncher();
+
+    // Clean temp dir
+    finishUp();
 
     return 0;
 }

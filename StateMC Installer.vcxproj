@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{df25e3d5-bf06-4d7f-aeb0-ab7c76a29c19}</ProjectGuid>
     <RootNamespace>StateMCInstaller</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -153,11 +153,13 @@
   <ItemGroup>
     <ClCompile Include="Downloader.cpp" />
     <ClCompile Include="FileUtils.cpp" />
+    <ClCompile Include="ProcessHelper.cpp" />
     <ClCompile Include="StateMC Installer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Downloader.h" />
     <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="ProcessHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

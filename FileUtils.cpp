@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <filesystem>
 
+
 std::optional<fs::path> findExeFile(const fs::path& rootDir, const std::string& exeName) {
     try {
         if (!fs::exists(rootDir) || !fs::is_directory(rootDir)) {
@@ -40,5 +41,10 @@ void deleteTempDirectory(const std::string& path) {
 
 void createDownloadDirectory(const std::string& path) {
     std::wstring widestr = std::wstring(path.begin(), path.end());
-    CreateDirectory(widestr.c_str(), nullptr);
+    if (!CreateDirectoryW(widestr.c_str(), nullptr)) {
+        DWORD error = GetLastError();
+        if (error != ERROR_ALREADY_EXISTS) {
+            std::cerr << "Error creating directory: " << error << std::endl;
+        }
+    }
 }
