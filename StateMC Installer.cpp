@@ -130,6 +130,16 @@ void finishUp() {
     std::cout << "Made with love by zOnlyKroks :3" << std::endl;
 }
 
+void handleSwitch() {
+    system("cls");
+
+    std::cout << "StateMC Installer" << std::endl;
+
+    handleCreateDirectory();
+
+    moveCursorToLine(18);
+}
+
 boolean doInstallJava = false;
 boolean doExecuteTeamspeak = false;
 boolean doExecuteTeamspeakPlugin = false;
@@ -174,13 +184,7 @@ int main() {
 		doExecuteTechnicLauncher = true;
 	}
 
-    system("cls");
-
-    std::cout << "StateMC Installer" << std::endl;
-
-    handleCreateDirectory();
-
-    moveCursorToLine(18);
+    handleSwitch();
 
     if (!downloadFilesConcurrently(downloadUrls)) {
         std::cerr << "Failed to download files." << std::endl;
