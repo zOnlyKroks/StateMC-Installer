@@ -154,6 +154,7 @@
     <ClCompile Include="Downloader.cpp" />
     <ClCompile Include="DownloadUtils.cpp" />
     <ClCompile Include="FileUtils.cpp" />
+    <ClCompile Include="JavaHelper.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
     <ClCompile Include="StateMC Installer.cpp" />
     <ClCompile Include="TeamspeakHelper.cpp" />
