@@ -12,5 +12,6 @@ namespace fs = std::filesystem;
 void deleteTempDirectory(const std::string& path);
 std::optional<fs::path> findExeFile(const fs::path& rootDir, const std::string& exeName);
 void createDownloadDirectory(const std::string& path);
+void finishUp();
 
 #endif /* FILEUTILS_H */

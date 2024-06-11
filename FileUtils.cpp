@@ -48,3 +48,12 @@ void createDownloadDirectory(const std::string& path) {
         }
     }
 }
+
+void finishUp() {
+    std::cout << "Cleaning up..." << std::endl;
+    deleteTempDirectory("C:\\StateInstallerTemp");
+    std::cout << "Cleaned up." << std::endl;
+
+    std::cout << "If you see this, installation is finished and you can close this window." << std::endl;
+    std::cout << "Made with love by zOnlyKroks :3" << std::endl;
+}
