@@ -9,15 +9,15 @@ bool runProcess(const std::string& command) {
     cmd.push_back('\0');
 
     if (!CreateProcessA(nullptr, cmd.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-        // If CreateProcessA fails, check the error
         DWORD error = GetLastError();
         if (error == ERROR_ELEVATION_REQUIRED || error == ERROR_ACCESS_DENIED || error == ERROR_PRIVILEGE_NOT_HELD) {
-            // If elevation is required, use ShellExecuteEx to run the command with elevated privileges
             SHELLEXECUTEINFOA sei = { sizeof(sei) };
             sei.lpVerb = "runas";  // Request elevation
             sei.lpFile = "cmd.exe";
             std::string parameters = "/C " + command;
-            sei.lpParameters = parameters.c_str();
+            std::vector<char> params(parameters.begin(), parameters.end());
+            params.push_back('\0');
+            sei.lpParameters = params.data();
             sei.nShow = SW_SHOWNORMAL;
             sei.fMask = SEE_MASK_NOCLOSEPROCESS;
 
@@ -27,10 +27,16 @@ bool runProcess(const std::string& command) {
                 return false;
             }
 
-            // Wait until the process exits
-            WaitForSingleObject(sei.hProcess, INFINITE);
-            CloseHandle(sei.hProcess);
-            return true;
+            if (sei.hProcess) {
+                // Wait until the process exits
+                WaitForSingleObject(sei.hProcess, INFINITE);
+                CloseHandle(sei.hProcess);
+                return true;
+            }
+            else {
+                std::cerr << "Failed to get process handle from ShellExecuteEx." << std::endl;
+                return false;
+            }
         }
         else {
             std::cerr << "CreateProcess failed (" << error << "): " << command << std::endl;

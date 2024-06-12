@@ -3,6 +3,6 @@
 
 #include <vector>
 
-bool downloadFilesConcurrently(std::vector<std::pair<const char*, const char*>> downloadUrls);
+bool downloadFilesConcurrently(const std::vector<std::pair<const char*, const char*>>& downloadUrls);
 
 #endif /* DOWNLOAD_HELPER_H */

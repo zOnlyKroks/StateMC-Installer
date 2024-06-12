@@ -11,6 +11,6 @@ struct DownloadItem {
 
 bool downloadURL(const char* url, const char* fileName, int console_line);
 void moveCursorToLine(int line);
-int progress_bar(void* bar, double t, double d, double ultotal, double ulnow);
+int ProgressCallback(void* bar, double t, double d, double ultotal, double ulnow);
 
 #endif /* DOWNLOADER_H */
