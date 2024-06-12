@@ -8,25 +8,22 @@
 #include <filesystem>
 
 
-std::optional<fs::path> findExeFile(const fs::path& rootDir, const std::string& exeName) {
-    try {
-        if (!fs::exists(rootDir) || !fs::is_directory(rootDir)) {
-            std::cerr << "Invalid root directory: " << rootDir << std::endl;
-            return std::nullopt;
-        }
+fs::path findExecutable(const fs::path& rootDir, const std::string& exeName) {
+    std::vector<fs::directory_entry> entries;
 
-        for (const auto& entry : fs::recursive_directory_iterator(rootDir)) {
-            if (entry.is_regular_file() && entry.path().filename() == exeName) {
-                return entry.path();
-            }
-        }
-    }
-    catch (const fs::filesystem_error& e) {
-        std::cerr << "Filesystem error: " << e.what() << std::endl;
-        return std::nullopt;
+    std::copy(fs::recursive_directory_iterator(rootDir),
+              fs::recursive_directory_iterator(),
+              std::back_inserter(entries));
+
+    auto it = std::find_if(entries.begin(), entries.end(), [&exeName](const fs::directory_entry& entry) {
+        return entry.is_regular_file() && entry.path().filename() == exeName;
+    });
+
+    if (it != entries.end()) {
+        return it->path();
     }
 
-    return std::nullopt;
+    return fs::path();  // Return an empty path if not found
 }
 
 void deleteTempDirectory(const std::string& path) {

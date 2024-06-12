@@ -14,20 +14,18 @@
 #include "TeamspeakHelper.h"
 #include "TechnicHelper.h"
 
+boolean doInstallJava = false;
+boolean doExecuteTeamspeak = false;
+boolean doExecuteTeamspeakPlugin = false;
+boolean doExecuteTechnicLauncher = false;
+
 void handleSwitch() {
     system("cls");
 
     std::cout << "StateMC Installer" << std::endl;
 
     createDownloadDirectory("C:\\StateInstallerTemp\\");
-
-    moveCursorToLine(18);
 }
-
-boolean doInstallJava = false;
-boolean doExecuteTeamspeak = false;
-boolean doExecuteTeamspeakPlugin = false;
-boolean doExecuteTechnicLauncher = false;
 
 int main() {
     std::cout << "StateMC Installer" << std::endl;
@@ -69,6 +67,8 @@ int main() {
 	}
 
     handleSwitch();
+
+    moveCursorToLine(18);
 
     if (!downloadFilesConcurrently(downloadUrls)) {
         std::cerr << "Failed to download files." << std::endl;

@@ -20,7 +20,7 @@ struct ProgressData {
     int console_line = 0;
 };
 
-size_t WriteData(void* ptr, size_t size, size_t nmemb, FILE* stream) {
+size_t WriteData(const void* ptr, size_t size, size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);
 }
 
