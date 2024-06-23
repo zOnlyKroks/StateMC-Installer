@@ -3,10 +3,13 @@
 
 #include <string>
 #include <optional>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
-void moveAndExecuteTechnicLauncher();
 void executeTechnicLauncher(const std::string& path);
 bool copyTechnicLauncher(const std::string& destination);
 std::optional<std::string> getDesktopPath();
+bool createNeccesaryDirectories();
+void handleCreateInstalledModpackFile(const std::string& dotTechnicPath, std::ofstream& outFile);
 
 #endif /* TECHNIC_HELPER_H */

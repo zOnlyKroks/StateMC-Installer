@@ -154,6 +154,7 @@
     <ClCompile Include="Downloader.cpp" />
     <ClCompile Include="DownloadUtils.cpp" />
     <ClCompile Include="FileUtils.cpp" />
+    <ClCompile Include="Installer.cpp" />
     <ClCompile Include="JavaHelper.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
     <ClCompile Include="StateMC Installer.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Downloader.h" />
     <ClInclude Include="DownloadUtils.h" />
     <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="Installer.h" />
     <ClInclude Include="JavaHelper.h" />
     <ClInclude Include="ProcessHelper.h" />
     <ClInclude Include="TeamspeakHelper.h" />
