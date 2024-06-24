@@ -46,6 +46,18 @@ void createDownloadDirectory(const std::string& path) {
     }
 }
 
+bool createFolderIfNoExist(const std::string& path) {
+    if (!fs::exists(path)) {
+        try {
+            fs::create_directories(path);
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "Failed to create" << path << "directory:"  << e.what() << std::endl;
+                return false;
+        }
+    }
+}
+
 void finishUp() {
     std::cout << "Cleaning up..." << std::endl;
     deleteTempDirectory("C:\\StateInstallerTemp");

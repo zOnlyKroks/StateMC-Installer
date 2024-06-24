@@ -3,8 +3,6 @@
 
 #include <string>
 #include <optional>
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
 
 void executeTechnicLauncher(const std::string& path);
 bool copyTechnicLauncher(const std::string& destination);

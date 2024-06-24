@@ -9,10 +9,10 @@
 #include <fstream>  
 #include "ProcessHelper.h"
 #include "Downloader.h"
+#include "FileUtils.h"
 #include <zip.h>
 
 namespace fs = std::filesystem;
-using json = nlohmann::json;
 
 bool copyTechnicLauncher(const std::string& destination) {
     try {
@@ -50,27 +50,10 @@ std::optional<std::string> getDesktopPath() {
 bool createNeccesaryDirectories() {
     const std::string dotTechnicPath = std::string(std::getenv("APPDATA")) + "\\.technic\\";
 
-    if(!fs::exists(dotTechnicPath)) {
-		try {
-			fs::create_directories(dotTechnicPath);
-		}
-		catch (const fs::filesystem_error& e) {
-			std::cerr << "Failed to create .technic directory: " << e.what() << std::endl;
-			return false;
-		}
-	}
-
     const std::string modpacksPath = dotTechnicPath + "modpacks\\";
 
-    if (!fs::exists(modpacksPath)) {
-        try {
-            fs::create_directories(modpacksPath);
-        }
-        catch (const fs::filesystem_error& e) {
-            std::cerr << "Failed to create modpacks directory: " << e.what() << std::endl;
-            return false;
-        }
-    }
+    createFolderIfNoExist(dotTechnicPath);
+    createFolderIfNoExist(modpacksPath);
 
     const std::string installedModpacksFileWithoutEnding = dotTechnicPath + "installedPacks";
     std::ofstream outFile = std::ofstream(installedModpacksFileWithoutEnding);

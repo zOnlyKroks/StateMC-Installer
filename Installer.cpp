@@ -34,6 +34,8 @@ void start() {
 
     std::vector<std::pair<const char*, const char*>> downloadUrls = {};
 
+    const std::string desktopPath = getDesktopPath().value();
+
     char choice;
 
     std::cout << "Do you want to install Java? (y/n): ";
@@ -115,11 +117,11 @@ void start() {
     }
 
     if (moveTechnicLauncher) {
-        copyTechnicLauncher(getDesktopPath().value());
+        copyTechnicLauncher(desktopPath);
     }
 
     if (doLaunchTechnicLauncher) {
-        executeTechnicLauncher(getDesktopPath().value());
+        executeTechnicLauncher(desktopPath);
     }
 
     // Clean temp dir
